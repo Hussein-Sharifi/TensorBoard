@@ -1,0 +1,35 @@
+Convolutional and pooling layers: 
+
+super(Net, self).__init__()
+        self.conv1 = nn.Conv2d(1, 6, 5)    # 1 channel, 6 filters (kernels) being learned, kernel size is 5x5
+        self.pool = nn.MaxPool2d(2, 2)     # kernel size is 2x2, stride is 2. MaxPool retains highest value in each
+        self.conv2 = nn.Conv2d(6, 16, 5)     region
+        self.fc1 = nn.Linear(16 * 4 * 4, 120)
+        self.fc2 = nn.Linear(120, 84)
+        self.fc3 = nn.Linear(84, 10)
+
+
+
+kernels/filters are matrices that slide over the input matrix and compute the dot product, detecting features of
+                                                                                         the image such as edges. 
+
+In addition to MaxPool, which is the most common pooling function, there is average pool, and global pool, which
+                                                                                     only retains a single value 
+
+
+
+Output size calculation
+-----------------------   
+ 
+H = height of input
+W = width of input
+K = kernel size
+S = stride
+P = padding
+
+
+
+                    Output size= (H − K + 2P) / S   + 1
+
+eg: 28 * 28 has with a 5x5 kernel (i.e. size 5) and stride 1 has output 24x24
+

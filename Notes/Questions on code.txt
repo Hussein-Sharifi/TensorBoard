@@ -1,0 +1,79 @@
+1: what is momentum?
+
+Momentum helps in faster convergence and reducing oscillations in SGD.
+
+Instead of updating weights based only on the current gradient, momentum accumulates past gradients to create a 
+smoother trajectory. This prevents the optimizer from getting stuck in local minima or oscillating in sharp valleys.
+
+
+The update rule with momentum is:
+
+                               v_t = βv_(t-1) + (1 - β)∇L(θ)
+                                       θ = θ - ηv_t
+
+where:
+𝑣_t  is the velocity (accumulated gradient)
+β is the momentum (e.g., 0.9)
+η is the learning rate
+
+_____________________________________________________________________________________________________________________
+
+2: How does softmax work?
+
+
+* First off, softmax is applied automatically when using crossentropy loss function. So don't use both.
+
+* softmax requires all the logits for a given input. so you can't just pass it the maxiumum logit score, it needs
+  logits for every class.
+
+
+
+* eg: Let's take a detailed look through the value returned in this function
+ ----
+
+def images_to_probs(net, images):
+
+    output = net(images)
+    scores, pred_class = torch.max(output, 1)
+    preds = np.squeeze(pred_class.numpy())
+    return preds, [F.softmax(el, dim=0)[i].item() for i, el in zip(preds, output)]
+
+
+* we don't care about scores. this is just max score for each input, but we need the whole list of logits for 
+  softmax
+
+* we want predicted class, along with the probability of this predicted class. output has shape (100, 10). i.e. for
+  each input we get an el with 10 logits. F.softmax takes in the nth el and applies softmax over logits. preds is a
+  list with most likely class. So i represents the most likely class for el.
+
+* finally, .item() extracts the float from the tensor that F.softmax returns. 
+
+___________________________________________________________________________________________________________________
+
+3: why softmax all probs when testing?
+
+class_probs_batch = [F.softmax(logits, dim=0) for logits in output]
+
+* we're trying to get a prob distribution for all classes. this way we can create a Precision-Recall (PR) curve
+  in TensorBoard
+
+* Precision = True positives / (True positives + False positives): what % of our finds are valuable?
+
+* Recall = True positives / (True positives + False negatives): what % of total correct labels did we get?
+
+* We can use this graph to pick a decision threshold, which is a minimum threshold on precision. We want to pick
+                                  ------------------
+  a threshold relaxed enough to get most of the data labeled, but that doesn't allow too many false positives.
+
+
+___________________________________________________________________________________________________________________
+
+4: How does add_pr_curve_tensorboard work?
+
+* tensorboard_truth = test_label == class_index  
+  This checks which images have class_index as label and returns a tensor with True/False for each input
+
+* tensorboard_probs = test_probs[:, class_index] 
+  gets probability of class_index for each input and returns a tensor
+
+* Now we just cross-reference probability tensor with True/False tensor.
