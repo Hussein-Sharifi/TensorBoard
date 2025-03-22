@@ -1,5 +1,4 @@
-# %% Importing Dependencies
-
+# %% Import Dependencies
 import torch
 import torchvision
 import torchvision.transforms as transforms
@@ -10,18 +9,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-
-
-# %% Transforms
-
+# %% Transform pixel values to be contained in [-1, 1]
 transform = transforms.Compose(
     [transforms.ToTensor(), transforms.Normalize((0.5,), (0.5))])
 
 
-
-
-# %% data
-
+# %% Load train and test datasets
 trainset = torchvision.datasets.FashionMNIST(
     root='data',
     download=True,
@@ -35,10 +28,7 @@ testset = torchvision.datasets.FashionMNIST(
     transform=transform)
 
 
-
-
-# %% dataLoaders
-
+# %% Prepare dataLoaders and set classes
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=4,
                                           shuffle=True)
 
@@ -49,10 +39,7 @@ classes = ('T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
            'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle Boot')
 
 
-
-
-# %% helper function for showing images with plt
-
+# %% Define helper function for plotting images
 def matplotlib_imshow(img, one_channel=False):
     if one_channel:
         img = img.mean(dim=0)
@@ -64,10 +51,7 @@ def matplotlib_imshow(img, one_channel=False):
         plt.imshow(np.transpose(npimg, (1, 2, 0)))
 
 
-
-
-# %% Define model
-
+# %% Create nn model
 class Net(nn.Module):
     def __init__(self):
         super().__init__()
@@ -87,30 +71,20 @@ class Net(nn.Module):
         x = self.fc3(x)
         return x
 
-
 model = Net()
 
 
-
-
-# %% Optimizer and loss
-
+# %% Define optimizer and loss functions
 loss_fn = nn.CrossEntropyLoss()
 optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
 
-
-
-# %% TensorBoard summary setup
-
+# %% Set up TensorBoard summarywriter
 from torch.utils.tensorboard import SummaryWriter
 writer = SummaryWriter('runs/fashion_mnist_experiment_1')
 
 
-
-
-# %% Showing images using tensorboard
-
+# %% Display 4 item images in TensorBoard
 dataiter = iter(trainloader)
 images, labels = next(dataiter)
 img_grid = torchvision.utils.make_grid(images)
@@ -120,10 +94,7 @@ writer.add_graph(model, images)
 writer.close()
 
 
-
-
-# %% Tensorboard Projector
-
+# %% Embed data to visualize dimnsionality-reduction in TensorBoard
 def select_n_random(data, labels, n=100):
     
     assert len(data) == len(labels)
@@ -141,8 +112,7 @@ writer.add_embedding(features,
 writer.close()
 
 
-# %% Tracking model training with Tensorboard
-
+# %% Track model training in Tensorboard
 images = images.unsqueeze(1).float()
 
 def images_to_probs(model, images):
@@ -164,9 +134,9 @@ def plot_classes_preds(model, images, labels):
             color=("green" if preds[idx]==labels[idx].item() else "red")
         )
     return fig
-    
-# %% Train loop
 
+
+# %% Train loop with TensorBoard
 model.train()
 running_loss = 0.0
 
@@ -193,9 +163,7 @@ for epoch in range(1):
     print("Finished Training")
 
 
-
-#  %% test loop
-
+#  %% Test loop with TensorBoard
 model.eval()
 class_probs = []
 class_labels = []
@@ -211,10 +179,7 @@ test_probs = torch.cat([torch.stack(batch) for batch in class_probs])     # comb
 test_labels = torch.cat(class_labels)
 
 
-
-
-# %% Adding PR Curves to Tensorboard
-
+# %% Add PR curves to Tensorboard
 def add_pr_curve_tensorboard(class_index, test_probs, test_label, global_step=0):
 
     tensorboard_truth = test_label == class_index  # check which images have class_index as label
