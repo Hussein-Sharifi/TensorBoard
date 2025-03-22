@@ -19,14 +19,6 @@ Repo to practice tracking model training and performance with TensorBoard.
 
 
 ## Model Architecture
-Convolutional layers:
-- Conv2d(1 → 6, kernel_size=5), MaxPool
-- Conv2d(6 → 16, kernel_size=5), MaxPool
-
-Fully connected layers:
-- Linear(16*4*4 → 120), ReLU
-- Linear(120 → 84), ReLU
-- Linear(84 → 10), Softmax
 
 ```python
 class Net(nn.Module):
